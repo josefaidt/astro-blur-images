@@ -1,6 +1,6 @@
 {
   "name": "astro-blur-images",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Blurred placeholders for Markdown images in Astro, swapped for the full image once it loads",
   "keywords": [
     "astro",
