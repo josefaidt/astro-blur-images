@@ -1,0 +1,66 @@
+{
+  "name": "astro-blur-images",
+  "version": "0.1.0",
+  "description": "Blurred placeholders for Markdown images in Astro, swapped for the full image once it loads",
+  "keywords": [
+    "astro-integration",
+    "withastro",
+    "astro",
+    "remark",
+    "rehype",
+    "image",
+    "blur",
+    "placeholder"
+  ],
+  "license": "MIT",
+  "author": "josefaidt",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
+    },
+    "./styles.css": "./styles.css"
+  },
+  "files": [
+    "dist",
+    "styles.css"
+  ],
+  "sideEffects": [
+    "./dist/client.js",
+    "./styles.css"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "example": "bun run build && astro build --root example",
+    "example:dev": "bun run build && astro dev --root example",
+    "prepublishOnly": "bun run build && bun test"
+  },
+  "dependencies": {
+    "@types/hast": "^3.0.0",
+    "@types/mdast": "^4.0.0",
+    "unist-util-visit": "^5.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/markdown-remark": "7.3.6",
+    "@types/bun": "^1.4.0",
+    "@types/node": "^24.0.0",
+    "astro": "^7.4.0",
+    "mdast-util-to-hast": "^13.0.0",
+    "rehype-stringify": "^10.0.0",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.0.0",
+    "sharp": "^0.35.0",
+    "typescript": "^6.0.0",
+    "unified": "^11.0.0"
+  },
+  "peerDependencies": {
+    "astro": ">=6.4.0",
+    "sharp": ">=0.34.0"
+  }
+}

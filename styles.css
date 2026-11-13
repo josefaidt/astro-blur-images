@@ -1,0 +1,62 @@
+/*
+  Styles for the markup rehypeBlurWrapper renders. Override the custom properties to restyle it:
+
+  --blur-image-radius    corner radius of the image box (default 0.375rem)
+  --blur-image-blur      blur applied to the placeholder (default 20px)
+  --blur-image-duration  length of the fade to the full image (default 0.4s)
+*/
+
+.blur-wrapper {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border-radius: var(--blur-image-radius, 0.375rem);
+}
+
+.blur-wrapper > img {
+  margin: 0;
+}
+
+.blur-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(var(--blur-image-blur, 20px));
+  /* scaled past the edges so the blur does not fade to transparent at the border */
+  transform: scale(1.1);
+  transition: opacity var(--blur-image-duration, 0.4s) ease;
+}
+
+.blur-full {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  transition: opacity var(--blur-image-duration, 0.4s) ease;
+}
+
+.blur-wrapper[data-loaded] > .blur-placeholder {
+  opacity: 0;
+}
+
+.blur-wrapper[data-loaded] > .blur-full {
+  opacity: 1;
+}
+
+/* Without JavaScript nothing marks the box loaded, so the full image shows from the start */
+@media (scripting: none) {
+  .blur-full {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blur-placeholder,
+  .blur-full {
+    transition: none;
+  }
+}

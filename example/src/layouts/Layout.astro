@@ -1,0 +1,28 @@
+---
+interface Props {
+  frontmatter: { title: string }
+}
+
+const { frontmatter } = Astro.props
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{frontmatter.title}</title>
+    <style>
+      body {
+        max-width: 42rem;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        font-family: system-ui, sans-serif;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>{frontmatter.title}</h1>
+    <slot />
+  </body>
+</html>
