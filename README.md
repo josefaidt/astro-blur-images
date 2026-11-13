@@ -74,10 +74,23 @@ To use the plugins without the integration, import `astro-blur-images/styles.css
 
 ```sh
 bun install
-bun test             # runs the plugins through unified against generated images
-bun run example      # builds the package and the Astro site in example/
-bun run example:dev  # the example in astro dev
+bun test                 # runs the plugins through unified against generated images
+bun run example:build    # builds the package and the Astro site in example/
+bun run example:dev      # the example in astro dev
+bun run example:preview  # the built example served by wrangler, as it runs on Cloudflare
 ```
+
+## Release
+
+Run the Release workflow from the Actions tab, or:
+
+```sh
+gh workflow run release --field bump=minor
+```
+
+It runs the tests, builds the example, and bumps the version. Then it deploys the example to Cloudflare Workers, pushes the release commit and tag to `main`, and publishes release notes. Nothing is pushed until the deploy succeeds, so a failed run leaves nothing to undo.
+
+The workflow needs two repository secrets: `CLOUDFLARE_API_TOKEN`, a token that can edit Workers scripts on the account and Workers routes on the `josef.dev` zone, and `CLOUDFLARE_ACCOUNT_ID`. The example's Worker config is `example/wrangler.jsonc`, which serves the prerendered site as static assets at [astro-blur-images.josef.dev](https://astro-blur-images.josef.dev).
 
 ## Publish
 

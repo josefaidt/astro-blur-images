@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prepatch
+          - preminor
+          - premajor
+          - prerelease
+
+# One release at a time, and never cancel one partway through
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  # The version bump stays local until the example deploys, so a failed check or deploy leaves
+  # main, the tags, and the releases untouched, with nothing to roll back.
+  release:
+    name: Release
+    # The push goes to main, so a run started from another branch skips instead
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Keeps the token out of .git/config, so the install, tests, and build can't push
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      # Third-party, so pinned to a commit rather than a movable tag
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: ".bun-version"
+      - name: Install
+        run: bun ci
+      - name: Test
+        run: bun test
+      # Builds the package into dist/, then the example site into example/dist/
+      - name: Build example
+        run: bun run example:build
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Bump version
+        id: bump
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          TAG=$(npm version "$BUMP" --message "release: %s")
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+      - name: Deploy example to Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TAG: ${{ steps.bump.outputs.tag }}
+        run: bun run example:deploy --message "$TAG"
+      # Atomic, so main and the tag land together or not at all
+      - name: Push
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.bump.outputs.tag }}
+        run: |
+          git push --atomic \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            HEAD:main "$TAG"
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.bump.outputs.tag }}
+          BUMP: ${{ inputs.bump }}
+        run: |
+          PRERELEASE=()
+          if [[ "$BUMP" == pre* ]]; then
+            PRERELEASE=(--prerelease)
+          fi
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$TAG" \
+            --generate-notes \
+            "${PRERELEASE[@]}"
